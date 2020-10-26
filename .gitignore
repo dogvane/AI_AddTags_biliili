@@ -9,6 +9,9 @@
 *.user
 *.userosscache
 *.sln.docstates
+3rdparty/
+/Data/
+$RECYCLE.BIN/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

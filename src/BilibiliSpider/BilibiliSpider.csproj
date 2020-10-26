@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="E:\Code\FindBilibiliUP\AipSdk\AipSdk.csproj" />
+    <ProjectReference Include="E:\Code\FindBilibiliUP\BaiduFaceAI\BaiduFaceAI.csproj" />
+    <ProjectReference Include="V:\Code\DotnetSpider\src\DotnetSpider\DotnetSpider.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenCvSharp4.Windows" Version="4.5.0.20201013" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="3.4.1-dev-00180" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0-dev-00839" />
+    <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.1-dev-00771" />
+    <PackageReference Include="ServiceStack.OrmLite.MySql.Core" Version="5.9.2" />
+  </ItemGroup>
+
+</Project>
