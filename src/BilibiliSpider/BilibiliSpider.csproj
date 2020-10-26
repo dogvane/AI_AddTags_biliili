@@ -6,9 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="E:\Code\FindBilibiliUP\AipSdk\AipSdk.csproj" />
-    <ProjectReference Include="E:\Code\FindBilibiliUP\BaiduFaceAI\BaiduFaceAI.csproj" />
-    <ProjectReference Include="V:\Code\DotnetSpider\src\DotnetSpider\DotnetSpider.csproj" />
+    <Compile Remove="Entity\Database\ImageDetect.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +16,10 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0-dev-00839" />
     <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.1-dev-00771" />
     <PackageReference Include="ServiceStack.OrmLite.MySql.Core" Version="5.9.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\3rdparty\DotnetSpider\src\DotnetSpider\DotnetSpider.csproj" />
   </ItemGroup>
 
 </Project>

@@ -48,14 +48,14 @@ namespace BilibiliSpider.DB
                 db.CreateTable<AV>();
                 db.CreateTable<UP>();
                 db.CreateTable<Tag>();
-                db.CreateTable<ImageDetect>();
+                // db.CreateTable<ImageDetect>();
                 db.CreateTable<ImageTag>();
             }
 
-            using (var db = GetCon(SqliteDBName.History))
-            {
-                db.CreateTable<AVHistory>();
-            }
+            //using (var db = GetCon(SqliteDBName.History))
+            //{
+            //    db.CreateTable<AVHistory>();
+            //}
         }
 
         /// <summary>
