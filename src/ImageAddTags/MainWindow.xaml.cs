@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Point = OpenCvSharp.Point;
 using Window = System.Windows.Window;
 
 namespace ImageAddTags
@@ -63,6 +64,10 @@ namespace ImageAddTags
                     foreach (var r in ract)
                     {
                         Cv2.Rectangle(image, r, Scalar.Red);
+                        // 顺便标注一下尺寸
+                        var ioa = InputOutputArray.Create(image);
+                        Cv2.PutText(ioa, $"w:{r.Width} h:{r.Height}", new Point(r.Left, r.Bottom + 2),
+                            HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
                     }
                 }
 
