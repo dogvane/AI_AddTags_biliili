@@ -292,5 +292,19 @@ namespace ImageAddTags
                 }
             }
         }
+
+        /// <summary>
+        /// 保存当前的状态
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnSave_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentShowTag != null)
+            {
+                using var db = DBSet.GetCon(DBSet.SqliteDBName.Bilibili);
+                db.Update(currentShowTag);
+            }
+        }
     }
 }
