@@ -7,6 +7,7 @@ using BilibiliSpider.Entity.Database;
 using DotnetSpider.Http;
 using System.IO;
 using System.Threading.Tasks;
+using BilibiliSpider.Common;
 using BilibiliSpider.DB;
 using DotnetSpider.DataFlow;
 using DotnetSpider.DataFlow.Parser;
@@ -34,7 +35,7 @@ namespace BilibiliSpider.Spider.DataProcess
                 LocalFileName = GetLocalFile(av.pic)
             };
 
-            var trueFile = Path.Combine(DefaultPath, img.LocalFileName);
+            var trueFile = Path.Combine(DefaultImagePath, img.LocalFileName);
 
             if (File.Exists(trueFile))
             {
@@ -55,20 +56,13 @@ namespace BilibiliSpider.Spider.DataProcess
 
         static ImageProcess()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var info = new DirectoryInfo(AppContext.BaseDirectory);
-
-                while (info.Parent != null)
-                {
-                    info = info.Parent;
-                }
-
-                DefaultPath = Path.Combine(info.Name, @"Data/Images/");
-            }
+            DefaultPath = Utils.DefaultDataFolder;
+            DefaultImagePath = Path.Combine(Utils.DefaultDataFolder, "Images/");
         }
 
         public static string DefaultPath = string.Empty;
+
+        public static string DefaultImagePath = string.Empty;
 
         private static string GetLocalFile(string pic)
         {
@@ -86,7 +80,7 @@ namespace BilibiliSpider.Spider.DataProcess
         /// <returns></returns>
         public static string GetTrueFile(string imageLoccalFile)
         {
-            return Path.Combine(DefaultPath, imageLoccalFile);
+            return Path.Combine(DefaultImagePath, imageLoccalFile);
         }
 
         protected override async Task ParseAsync(DataFlowContext context)
@@ -103,7 +97,7 @@ namespace BilibiliSpider.Spider.DataProcess
                 return;
 
             var imageBytes = context.Response.Content.Bytes;
-            var trueFile = Path.Combine(DefaultPath, image.LocalFileName);
+            var trueFile = Path.Combine(DefaultImagePath, image.LocalFileName);
 
             var fi = new FileInfo(trueFile);
             if(!fi.Directory.Exists)
@@ -130,11 +124,9 @@ namespace BilibiliSpider.Spider.DataProcess
 
     public static class ImageProcessExtend
     {
-        public static string GetTrueFile(this ImageTag image)
+        public static string GetTrueImageFile(this ImageTag image)
         {
-            return Path.Combine(ImageProcess.DefaultPath, image.LocalFileName);
+            return Path.Combine(ImageProcess.DefaultImagePath, image.LocalFileName);
         }
-
-
     }
 }
