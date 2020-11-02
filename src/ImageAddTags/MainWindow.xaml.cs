@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using ImageAddTags.DataSet;
 using Point = OpenCvSharp.Point;
 using Window = System.Windows.Window;
 
@@ -37,8 +38,29 @@ namespace ImageAddTags
             }
         }
 
+        private void btnUpImage_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentShowTag == null)
+            {
+                if (images.Count == 0)
+                    return;
+
+                currentIndex = 0;
+            }
+
+            if (currentIndex <= 0)
+            {
+                return;
+            }
+            currentIndex--;
+
+            LoadPageShow();
+        }
+
         private void btnNextImage_Click(object sender, RoutedEventArgs e)
         {
+
+
             if (currentShowTag == null)
             {
                 if (images.Count == 0)
@@ -49,41 +71,67 @@ namespace ImageAddTags
 
             if (currentIndex < images.Count)
             {
-                currentShowTag = images[currentIndex++];
+                currentIndex++;
 
-                var image = Cv2.ImRead(currentShowTag.GetTrueFile());
-
-                var cc = CascadeClassifierManager.Load("haarcascade_frontalface_alt2.xml");
-
-                // 网上有看到有人先转灰度再识别，实际效果也没好多少 var gray_img = image.CvtColor(ColorConversionCodes.RGB2GRAY);
-
-                var ract = cc.DetectMultiScale(image);
-
-                if (ract.Length > 0)
-                {
-                    foreach (var r in ract)
-                    {
-                        Cv2.Rectangle(image, r, Scalar.Red);
-                        // 顺便标注一下尺寸
-                        var ioa = InputOutputArray.Create(image);
-                        Cv2.PutText(ioa, $"w:{r.Width} h:{r.Height}", new Point(r.Left, r.Bottom + 2),
-                            HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
-                    }
-                }
-
-                var bitmap = MatToBitmapImage(image);
-                imgShow.Source = bitmap;
-
-                panelCurrentImgTags.Children.Clear();
-
-                if (!string.IsNullOrEmpty(currentShowTag.TagsName))
-                {
-                    AppendTagtoCurrentTagPanel(currentShowTag.TagsName);
-                }
+                LoadPageShow();
             }
             else
             {
                 // 可能要加载更多的数据了
+            }
+        }
+
+        void LoadPageShow()
+        {
+
+            currentShowTag = images[currentIndex];
+
+            var image = Cv2.ImRead(currentShowTag.GetTrueImageFile());
+
+            var cc = CascadeClassifierManager.Load("haarcascade_frontalface_alt2.xml");
+
+            // 网上有看到有人先转灰度再识别，实际效果也没好多少 var gray_img = image.CvtColor(ColorConversionCodes.RGB2GRAY);
+
+            var ract = cc.DetectMultiScale(image);
+
+            if (ract.Length > 0)
+            {
+
+                foreach (var r in ract)
+                {
+                    Cv2.Rectangle(image, r, Scalar.Red);
+
+                    var body = TagsDataSet.GetRect(r, (double) (64 - 8) / 128, image.Width, image.Height);
+                    var ioa = InputOutputArray.Create(image);
+                    // 顺便标注一下尺寸
+                    Cv2.PutText(ioa, $"top:{r.Top} left:{r.Left} w:{r.Width} h:{r.Height}",
+                        new Point(r.Left, r.Bottom + 2),
+                        HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
+
+                    if (body != OpenCvSharp.Rect.Empty)
+                    {
+                        Cv2.Rectangle(image, body, Scalar.Red);
+                        ioa = InputOutputArray.Create(image);
+                        Cv2.PutText(ioa, $"top:{body.Top} left:{body.Left} w:{body.Width} h:{body.Height}",
+                            new Point(body.Left, body.Top - 10),
+                            HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
+                    }
+                }
+            }
+            else
+            {
+                btnNextImage_Click(null, null);
+                return;
+            }
+
+            var bitmap = MatToBitmapImage(image);
+            imgShow.Source = bitmap;
+
+            panelCurrentImgTags.Children.Clear();
+
+            if (!string.IsNullOrEmpty(currentShowTag.TagsName))
+            {
+                AppendTagtoCurrentTagPanel(currentShowTag.TagsName);
             }
         }
 
@@ -118,7 +166,7 @@ namespace ImageAddTags
 
             foreach (var item in list)
             {
-                var trueFile = item.GetTrueFile();
+                var trueFile = item.GetTrueImageFile();
 
                 if (File.Exists(trueFile))
                 {
@@ -311,5 +359,12 @@ namespace ImageAddTags
                 db.Update(currentShowTag);
             }
         }
+
+        private void btnOpenOutput_Click(object sender, RoutedEventArgs e)
+        {
+            new Output().ShowDialog();
+        }
+
+
     }
 }
