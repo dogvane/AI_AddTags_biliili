@@ -18,9 +18,13 @@
         </Grid.ColumnDefinitions>
         <Image Grid.Column="0"  x:Name="imgShow" HorizontalAlignment="Left" Height="auto"  Width="auto" Margin="0,0,0,0"/>
 
-        <WrapPanel x:Name="panelCurrentImgTags" VerticalAlignment="Top"   Grid.Column="1" Height="160" Margin="0,60,0,0"  >
+        <WrapPanel x:Name="panelCurrentImgTags" VerticalAlignment="Top"   Grid.Column="1" Height="40" Margin="0,40,0,0"  >
         </WrapPanel>
 
+        <WrapPanel x:Name="panelParts" VerticalAlignment="Top"   Grid.Column="1" Height="auto" Margin="0,90,0,0"  >
+        </WrapPanel>
+
+        
         <TextBox x:Name="txtNewTag" HorizontalAlignment="Left" Margin="10,0,0,150" TextWrapping="NoWrap" VerticalAlignment="Bottom" Width="100" Grid.Column="1" KeyUp="txtNewTag_KeyUp"/>
         <WrapPanel x:Name="paneldefaultTags" VerticalAlignment="Bottom"   Grid.Column="1" Height="80" Margin="0,0,0,50"  >
             <Label x:Name="label1" Content="JK"  BorderBrush="#FFF32222" BorderThickness="1,1,1,1" Margin="5,0,5,0" >
@@ -29,7 +33,7 @@
         </WrapPanel>
         <Button  Grid.Column="1" x:Name="btnNextImage" Content="下张图" HorizontalAlignment="Left" Margin="0,0,0,10" VerticalAlignment="Bottom" Height="24" Width="97" Click="btnNextImage_Click"/>
         <Button  Grid.Column="1" x:Name="btnUpImage" Content="上张图" HorizontalAlignment="Left" Margin="0,0,0,40" VerticalAlignment="Bottom" Height="24" Width="97" Click="btnUpImage_Click"/>
-        <Label x:Name="label" Content="当前图片的标签" Grid.Column="1" HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="label" Content="当前图片的标签" Grid.Column="1" HorizontalAlignment="Left" Margin="10,15,0,0" VerticalAlignment="Top"/>
         <Button x:Name="btnSave" Content="保存当前" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Height="24" Width="67" Click="btnSave_Click" />
         <Button x:Name="btnOpenOutput" Content="输出..." Grid.Column="1" HorizontalAlignment="Left" Margin="131,236,0,0" VerticalAlignment="Top" Padding="12,0" Click="btnOpenOutput_Click"/>
     </Grid>

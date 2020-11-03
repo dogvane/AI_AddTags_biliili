@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using OpenCvSharp;
 using ServiceStack.DataAnnotations;
 
 namespace BilibiliSpider.Entity.Database
@@ -50,5 +51,31 @@ namespace BilibiliSpider.Entity.Database
         /// 当前抓过你太
         /// </summary>
         public string Status{ get; set; }
+
+        /// <summary>
+        /// 标签区域
+        /// </summary>
+        public List<TagPart> Parts { get; set; } = new List<TagPart>();
+    }
+
+    /// <summary>
+    /// 一个标签的区域
+    /// </summary>
+    public class TagPart
+    {
+        /// <summary>
+        /// 脸部的位置
+        /// </summary>
+        public Rect Face { get; set; }
+
+        /// <summary>
+        /// 身体的部分
+        /// </summary>
+        public Rect Body { get; set; }
+
+        /// <summary>
+        /// 标签内容
+        /// </summary>
+        public string TagNams { get; set; }
     }
 }

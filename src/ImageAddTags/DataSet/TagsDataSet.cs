@@ -100,35 +100,42 @@ namespace ImageAddTags.DataSet
 
             if (ret.Top < 0)
             {
-                hr = (double)-ret.Top / height;
+                hr = (double)-(ret.Top*2) / height;
             }
 
             if (ret.Bottom > picHeight)
             {
-                hr = (double) (ret.Bottom - picHeight) / height;
+                hr = (double) ((ret.Bottom - picHeight)*2) / height;
             }
 
             if (ret.Left < 0)
             {
-                wr = (double) -ret.Left / height;
+                wr = (double) -(ret.Left*2) / height;
             }
 
             if (ret.Right > picWidth)
             {
-                wr = (double)(ret.Right - picWidth) / width;
+                wr = (double)((ret.Right - picWidth) *2) / width;
             }
 
             var maxR = Math.Max(hr, wr);
 
-            if (maxR < 0.2)
+            if (maxR < 0.3)
             {
                 // 变动不超过2层，可以进行截取操作，否则先无视
                 var nHeight = (int)(height * (1 - maxR));
                 var nWidth = (int)(height * rate);
-                var ret2 = new Rect( ret.X + ((width - nWidth) / 2), ret.Y + Math.Min(((height - nHeight) / 2), r), nWidth, nHeight);
+                var ret2 = new Rect(ret.X + ((width - nWidth) / 2), ret.Y + Math.Min(((height - nHeight) / 2), r), nWidth, nHeight);
                 Console.WriteLine($"{ret} -> {ret2}");
 
-                return ret2;
+                if (ret2.Top > 0 &&
+                    ret2.Left > 0 &&
+                    ret2.Top + height < picHeight &&
+                    ret2.Left + width < picWidth)
+                {
+                    // 矩形刚好再图片范围内
+                    return ret2;
+                }
             }
 
             return Rect.Empty;

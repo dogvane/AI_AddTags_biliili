@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using ImageAddTags.DataSet;
 using Point = OpenCvSharp.Point;
 using Window = System.Windows.Window;
+using Rect = OpenCvSharp.Rect;
 
 namespace ImageAddTags
 {
@@ -83,7 +84,6 @@ namespace ImageAddTags
 
         void LoadPageShow()
         {
-
             currentShowTag = images[currentIndex];
 
             var image = Cv2.ImRead(currentShowTag.GetTrueImageFile());
@@ -94,35 +94,59 @@ namespace ImageAddTags
 
             var ract = cc.DetectMultiScale(image);
 
-            if (ract.Length > 0)
+            List<TagPart> tps = new List<TagPart>();
+            foreach (var face in ract)
             {
+                var body = TagsDataSet.GetRect(face, (double)(64 - 8) / 128, image.Width, image.Height);
 
-                foreach (var r in ract)
+                if (body != Rect.Empty)
                 {
-                    Cv2.Rectangle(image, r, Scalar.Red);
-
-                    var body = TagsDataSet.GetRect(r, (double) (64 - 8) / 128, image.Width, image.Height);
-                    var ioa = InputOutputArray.Create(image);
-                    // 顺便标注一下尺寸
-                    Cv2.PutText(ioa, $"top:{r.Top} left:{r.Left} w:{r.Width} h:{r.Height}",
-                        new Point(r.Left, r.Bottom + 2),
-                        HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
-
-                    if (body != OpenCvSharp.Rect.Empty)
+                    tps.Add(new TagPart
                     {
-                        Cv2.Rectangle(image, body, Scalar.Red);
-                        ioa = InputOutputArray.Create(image);
-                        Cv2.PutText(ioa, $"top:{body.Top} left:{body.Left} w:{body.Width} h:{body.Height}",
-                            new Point(body.Left, body.Top - 10),
-                            HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
-                    }
+                        Face = face,
+                        Body = body
+                    });
                 }
             }
-            else
+
+            if (tps.Count == 0)
             {
                 btnNextImage_Click(null, null);
                 return;
             }
+            
+            panelParts.Children.Clear();
+
+            foreach (var item in tps)
+            {
+                var face = item.Face;
+                var body = item.Body;
+                
+                Cv2.Rectangle(image, face, Scalar.Red);
+                Cv2.Rectangle(image, body, Scalar.Red);
+
+                var ioa = InputOutputArray.Create(image);
+                // 顺便标注一下尺寸
+                Cv2.PutText(ioa, $"top:{face.Top} left:{face.Left} w:{face.Width} h:{face.Height}",
+                    new Point(face.Left, face.Bottom + 2),
+                    HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
+
+                ioa = InputOutputArray.Create(image);
+                Cv2.PutText(ioa, $"top:{body.Top} left:{body.Left} w:{body.Width} h:{body.Height}",
+                    new Point(body.Left, body.Top - 10),
+                    HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
+
+                // var i2 = image[body];
+                
+                var i2 = image.Clone(body);
+
+                var utp = new UserTagParts();
+                utp.imgShow.Source = MatToBitmapImage(i2);
+
+                panelParts.Children.Add(utp);
+            }
+
+            currentShowTag.Parts = tps;
 
             var bitmap = MatToBitmapImage(image);
             imgShow.Source = bitmap;
