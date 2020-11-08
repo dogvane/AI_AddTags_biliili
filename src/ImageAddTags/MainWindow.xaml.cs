@@ -5,6 +5,7 @@ using OpenCvSharp;
 using ServiceStack.OrmLite;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ImageAddTags.DataSet;
+using OpenCvSharp.Extensions;
+using ServiceStack;
 using Point = OpenCvSharp.Point;
 using Window = System.Windows.Window;
 using Rect = OpenCvSharp.Rect;
@@ -60,8 +63,6 @@ namespace ImageAddTags
 
         private void btnNextImage_Click(object sender, RoutedEventArgs e)
         {
-
-
             if (currentShowTag == null)
             {
                 if (images.Count == 0)
@@ -90,22 +91,27 @@ namespace ImageAddTags
 
             var cc = CascadeClassifierManager.Load("haarcascade_frontalface_alt2.xml");
 
-            // 网上有看到有人先转灰度再识别，实际效果也没好多少 var gray_img = image.CvtColor(ColorConversionCodes.RGB2GRAY);
+            var tps = currentShowTag.Parts;
 
-            var ract = cc.DetectMultiScale(image);
-
-            List<TagPart> tps = new List<TagPart>();
-            foreach (var face in ract)
+            if(tps == null || tps.Count == 0)
             {
-                var body = TagsDataSet.GetRect(face, (double)(64 - 8) / 128, image.Width, image.Height);
+                // 网上有看到有人先转灰度再识别，实际效果也没好多少 var gray_img = image.CvtColor(ColorConversionCodes.RGB2GRAY);
+                var ract = cc.DetectMultiScale(image);
 
-                if (body != Rect.Empty)
+                tps = new List<TagPart>();
+
+                foreach (var face in ract)
                 {
-                    tps.Add(new TagPart
+                    var body = TagsDataSet.GetRect(face, (double) (64 - 8) / 128, image.Width, image.Height);
+
+                    if (body != Rect.Empty)
                     {
-                        Face = face,
-                        Body = body
-                    });
+                        tps.Add(new TagPart
+                        {
+                            Face = face,
+                            Body = body
+                        });
+                    }
                 }
             }
 
@@ -114,7 +120,9 @@ namespace ImageAddTags
                 btnNextImage_Click(null, null);
                 return;
             }
-            
+
+            currentShowTag.Parts = tps;
+
             panelParts.Children.Clear();
 
             foreach (var item in tps)
@@ -123,6 +131,13 @@ namespace ImageAddTags
                 var body = item.Body;
                 
                 Cv2.Rectangle(image, face, Scalar.Red);
+
+                var i2 = image.Clone(body);
+                var utp = new UserTagParts();
+                utp.InitData(item);
+                utp.imgShow.Source = MatToBitmapImage(i2);
+                panelParts.Children.Add(utp);
+
                 Cv2.Rectangle(image, body, Scalar.Red);
 
                 var ioa = InputOutputArray.Create(image);
@@ -135,18 +150,7 @@ namespace ImageAddTags
                 Cv2.PutText(ioa, $"top:{body.Top} left:{body.Left} w:{body.Width} h:{body.Height}",
                     new Point(body.Left, body.Top - 10),
                     HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
-
-                // var i2 = image[body];
-                
-                var i2 = image.Clone(body);
-
-                var utp = new UserTagParts();
-                utp.imgShow.Source = MatToBitmapImage(i2);
-
-                panelParts.Children.Add(utp);
             }
-
-            currentShowTag.Parts = tps;
 
             var bitmap = MatToBitmapImage(image);
             imgShow.Source = bitmap;
@@ -159,12 +163,12 @@ namespace ImageAddTags
             }
         }
 
-        public BitmapImage MatToBitmapImage(Mat image)
+        public static BitmapImage MatToBitmapImage(Mat image)
         {
-            System.Drawing.Bitmap bitmap = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(image);
+            var bitmap = image.ToBitmap();
             using var ms = new MemoryStream();
 
-            bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            bitmap.Save(ms, ImageFormat.Png);
 
             BitmapImage result = new BitmapImage();
             result.BeginInit();
@@ -177,7 +181,7 @@ namespace ImageAddTags
 
         private ImageTag currentShowTag = null;
 
-        private List<ImageTag> images = new List<ImageTag>();
+        private readonly List<ImageTag> images = new List<ImageTag>();
         private int currentIndex = -1;
 
         private List<string> defaultTags = new List<string>();
@@ -205,7 +209,7 @@ namespace ImageAddTags
 
         private void LoadDefaultTagsToShow()
         {
-            paneldefaultTags.Children.Clear();
+            //paneldefaultTags.Children.Clear();
 
             foreach (var tagName in defaultTags)
             {
@@ -228,7 +232,7 @@ namespace ImageAddTags
             lab.MouseUp += OnLableNewTagMouseUp;
             lab.MouseDoubleClick += OnLableDelTags;
 
-            paneldefaultTags.Children.Add(lab);
+            //paneldefaultTags.Children.Add(lab);
         }
 
         private void AppendTagtoCurrentTagPanel(string tagName)
@@ -282,7 +286,7 @@ namespace ImageAddTags
                 var tagName = clickLabel.Content.ToString();
                 defaultTags.Remove(tagName);
                 File.WriteAllLines("defaultTag.txt", defaultTags);
-                paneldefaultTags.Children.Remove(clickLabel);
+                //paneldefaultTags.Children.Remove(clickLabel);
             }
         }
 
@@ -332,44 +336,6 @@ namespace ImageAddTags
             return sb.ToString();
         }
 
-        private void txtNewTag_KeyUp(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                // 如果是按回车，说明是确认输入一个新的tag
-                var newTag = txtNewTag.Text?.Trim();
-
-                if (!string.IsNullOrEmpty(newTag))
-                {
-                    var current = images[currentIndex];
-                    var tags = current.TagsName?.Split(',');
-
-                    if (tags != null && tags.Contains(newTag))
-                    {
-                        return;
-                    }
-
-                    if (tags == null || tags.Length == 0)
-                    {
-                        current.TagsName = newTag;
-                    }
-                    else
-                    {
-                        current.TagsName += "," + newTag;
-                    }
-
-                    txtNewTag.Text = string.Empty;
-
-                    if (!defaultTags.Contains(newTag))
-                    {
-                        defaultTags.Add(newTag);
-                        File.WriteAllLines("defaultTag.txt", defaultTags);
-                        AppendTagtoNewTagPanel(newTag);
-                    }
-                }
-            }
-        }
-
         /// <summary>
         /// 保存当前的状态
         /// </summary>
@@ -379,8 +345,25 @@ namespace ImageAddTags
         {
             if (currentShowTag != null)
             {
+                var allTags = new HashSet<string>();
+
+                foreach (var part in currentShowTag.Parts)
+                {
+                    if (part.TagNames == null)
+                        continue;
+
+                    foreach (var t in part.TagNames.Split(','))
+                    {
+                        allTags.Add(t);
+                    }
+                }
+
+                currentShowTag.TagsName = allTags.ToArray().ToCsv();
+
                 using var db = DBSet.GetCon(DBSet.SqliteDBName.Bilibili);
                 db.Update(currentShowTag);
+
+                btnNextImage_Click(null, null);
             }
         }
 

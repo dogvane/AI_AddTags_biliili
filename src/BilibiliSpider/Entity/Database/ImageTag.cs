@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json;
 using OpenCvSharp;
 using ServiceStack.DataAnnotations;
 
@@ -9,6 +10,7 @@ namespace BilibiliSpider.Entity.Database
     /// <summary>
     /// 图片的标签信息
     /// </summary>
+    [Serializable]
     public class ImageTag
     {
         /// <summary>
@@ -55,27 +57,54 @@ namespace BilibiliSpider.Entity.Database
         /// <summary>
         /// 标签区域
         /// </summary>
+        [Ignore]
         public List<TagPart> Parts { get; set; } = new List<TagPart>();
+
+        [Alias("Parts")]
+        public string PartsStr{
+            get
+            {
+                return JsonConvert.SerializeObject(Parts);
+            }
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    Parts = JsonConvert.DeserializeObject<List<TagPart>>(value);
+                }
+            }
+        }
     }
 
     /// <summary>
     /// 一个标签的区域
     /// </summary>
+    [Serializable]
     public class TagPart
     {
         /// <summary>
         /// 脸部的位置
+        /// 不用属性，主要是属性没法反序列化
         /// </summary>
-        public Rect Face { get; set; }
+        public Rect Face;
 
         /// <summary>
         /// 身体的部分
+        /// 不用属性，主要是属性没法反序列化
         /// </summary>
-        public Rect Body { get; set; }
+        public Rect Body;
 
         /// <summary>
         /// 标签内容
         /// </summary>
-        public string TagNams { get; set; }
+        public string TagNames { get; set; }
+
+        /// <summary>
+        /// 状态
+        /// 0 未设置
+        /// 1 已设置
+        /// 2 无效状态
+        /// </summary>
+        public int State { get; set; }
     }
 }

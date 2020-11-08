@@ -4,16 +4,35 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ImageAddTags"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
-             d:DesignHeight="128" d:DesignWidth="268">
+             d:DesignHeight="128"  Padding="0,5">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="56"/>
             <ColumnDefinition Width="180"/>
         </Grid.ColumnDefinitions>
-        
+
         <Image Grid.Column="0"  x:Name="imgShow" HorizontalAlignment="Left" Height="128"  Width="56" Margin="0,0,0,0"/>
-        <WrapPanel x:Name="panelCurrentImgTags" Height="128"   Grid.Column="1" Margin="20,0,0,0"  >
-        </WrapPanel>
+        <StackPanel Grid.Column="1">
+            <local:TagPanelShow x:Name="panelTags" Margin="20, 0,0,0" OnClickTag="panelTags_OnClickTag"></local:TagPanelShow>
+            <Button x:Name="btnAddTag" Grid.Column="1" Content="+" HorizontalAlignment="left" Margin="10,0,0,0" VerticalAlignment="Top" Padding="4,3" Click="labAddTag_Click" MouseEnter="labAddTag_MouseEnter" >
+            </Button>
+            <Popup x:Name="menuPop1" StaysOpen="False" PlacementTarget="{Binding ElementName=btnAddTag}" 
+                   AllowsTransparency="True"
+                   Margin="0, 0,0,0"
+                   Width="220"
+            >
+                <Grid Height="78" Width="200" HorizontalAlignment="Left">
+                    <local:TagPickup x:Name="tagPickup">
+
+                    </local:TagPickup>
+                </Grid>
+            </Popup>
+        </StackPanel>
+        <Button x:Name="BtnNotUse" Grid.Column="1" Content="无效" 
+                HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                Margin="10,0,0,10" Padding="4,3" 
+                Click="BtnNotUse_Click"></Button>
     </Grid>
 </UserControl>

@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Masuit.Tools.Core" Version="2.3.2" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\BilibiliSpider\BilibiliSpider.csproj" />
   </ItemGroup>
 
