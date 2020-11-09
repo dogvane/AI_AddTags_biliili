@@ -50,7 +50,13 @@ namespace BilibiliSpider.Entity.Database
         public string TagsName { get; set; }
 
         /// <summary>
-        /// 当前抓过你太
+        /// 当前的状态：
+        /// downfile_finish 表示图片下载完成
+        /// opencv_fail 表示通过opencv做人脸识别失败
+        /// invalid_data 表示opencv分析出来了，但是识别出来的数据是错误的需要被忽略
+        /// later 有数据，但是不考虑做分类，稍后再说。
+        /// completed 数据处理完成
+        /// 
         /// </summary>
         public string Status{ get; set; }
 

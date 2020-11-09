@@ -14,6 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using ImageAddTags.Common;
 using ImageAddTags.DataSet;
 using OpenCvSharp.Extensions;
 using ServiceStack;
@@ -71,15 +72,17 @@ namespace ImageAddTags
                 currentIndex = 0;
             }
 
-            if (currentIndex < images.Count)
+            if (currentIndex < images.Count - 1)
             {
                 currentIndex++;
-
                 LoadPageShow();
             }
             else
             {
                 // 可能要加载更多的数据了
+                Load100ImageDatas();
+                currentIndex = 0;
+                btnNextImage_Click(null, null);
             }
         }
 
@@ -117,6 +120,7 @@ namespace ImageAddTags
 
             if (tps.Count == 0)
             {
+                UpdateIamgeTagStatus(currentShowTag, "opencv_fail");
                 btnNextImage_Click(null, null);
                 return;
             }
@@ -135,7 +139,7 @@ namespace ImageAddTags
                 var i2 = image.Clone(body);
                 var utp = new UserTagParts();
                 utp.InitData(item);
-                utp.imgShow.Source = MatToBitmapImage(i2);
+                utp.imgShow.Source = i2.MatToBitmapImage();
                 panelParts.Children.Add(utp);
 
                 Cv2.Rectangle(image, body, Scalar.Red);
@@ -152,8 +156,7 @@ namespace ImageAddTags
                     HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
             }
 
-            var bitmap = MatToBitmapImage(image);
-            imgShow.Source = bitmap;
+            imgShow.Source = image.MatToBitmapImage();
 
             panelCurrentImgTags.Children.Clear();
 
@@ -161,22 +164,6 @@ namespace ImageAddTags
             {
                 AppendTagtoCurrentTagPanel(currentShowTag.TagsName);
             }
-        }
-
-        public static BitmapImage MatToBitmapImage(Mat image)
-        {
-            var bitmap = image.ToBitmap();
-            using var ms = new MemoryStream();
-
-            bitmap.Save(ms, ImageFormat.Png);
-
-            BitmapImage result = new BitmapImage();
-            result.BeginInit();
-            result.CacheOption = BitmapCacheOption.OnLoad;
-            result.StreamSource = ms;
-            result.EndInit();
-
-            return result;
         }
 
         private ImageTag currentShowTag = null;
@@ -188,9 +175,21 @@ namespace ImageAddTags
 
         private void Window_Loaded(object sender, EventArgs e)
         {
+            Load100ImageDatas();
+
+            // LoadDefaultTagsToShow();
+
+            btnNextImage_Click(null, null);
+        }
+
+        private void Load100ImageDatas()
+        {
+            images.Clear();
+
             // 窗口初始化结束
             using var db = DBSet.GetCon(DBSet.SqliteDBName.Bilibili);
-            var list = db.Select<ImageTag>().Take(100);
+
+            var list = db.Select<ImageTag>(o => o.Status == "downfile_finish").Take(100);
 
             foreach (var item in list)
             {
@@ -201,10 +200,6 @@ namespace ImageAddTags
                     images.Add(item);
                 }
             }
-
-            LoadDefaultTagsToShow();
-
-            btnNextImage_Click(null, null);
         }
 
         private void LoadDefaultTagsToShow()
@@ -270,7 +265,7 @@ namespace ImageAddTags
 
                 var exits = currentShowTag.TagsName.Split(',').ToList();
                 exits.Remove(removeTagName);
-                currentShowTag.TagsName = ToCSV(exits.ToArray());
+                currentShowTag.TagsName = exits.ToArray().ToCsv();
 
                 panelCurrentImgTags.Children.Remove(clickLabel);
             }
@@ -320,22 +315,6 @@ namespace ImageAddTags
             }
         }
 
-        private string ToCSV(string[] arr)
-        {
-            if (arr == null || arr.Length == 0)
-                return string.Empty;
-
-            StringBuilder sb = new StringBuilder();
-
-            foreach (var a in arr)
-            {
-                sb.Append(a).Append(',');
-            }
-
-            sb.Remove(sb.Length - 1, 1);
-            return sb.ToString();
-        }
-
         /// <summary>
         /// 保存当前的状态
         /// </summary>
@@ -361,6 +340,7 @@ namespace ImageAddTags
                 currentShowTag.TagsName = allTags.ToArray().ToCsv();
 
                 using var db = DBSet.GetCon(DBSet.SqliteDBName.Bilibili);
+                currentShowTag.Status = "completed";
                 db.Update(currentShowTag);
 
                 btnNextImage_Click(null, null);
@@ -372,6 +352,28 @@ namespace ImageAddTags
             new Output().ShowDialog();
         }
 
+        private void btnLater_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateIamgeTagStatus(currentShowTag, "later");
+            btnNextImage_Click(null, null);
+        }
 
+        private void UpdateIamgeTagStatus(ImageTag item, string status)
+        {
+            using var db = DBSet.GetCon(DBSet.SqliteDBName.Bilibili);
+            item.Status = status;
+            db.Update(currentShowTag);
+        }
+
+        /// <summary>
+        /// 将当前图片设置为无效图片
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnInvalidData_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateIamgeTagStatus(currentShowTag, "invalid_data");
+            btnNextImage_Click(null, null);
+        }
     }
 }
