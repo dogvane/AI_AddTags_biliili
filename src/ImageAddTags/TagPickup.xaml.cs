@@ -76,6 +76,10 @@ namespace ImageAddTags
         /// <param name="e"></param>
         private void txtNewTag_KeyUp(object sender, KeyEventArgs e)
         {
+            // 只有输入回车了，才需要处理
+            if (e.Key != Key.Enter)
+                return;
+
             var newTags = edtNewTag.Text;
             if (string.IsNullOrEmpty(newTags))
                 return;
@@ -86,9 +90,10 @@ namespace ImageAddTags
             }
 
             defaultTags.Add(newTags);
-            File.AppendAllLines("defaultTag.txt", defaultTags);
+            File.WriteAllLines("defaultTag.txt", defaultTags);
 
             this.OnClickTag?.Invoke(newTags);
+            edtNewTag.Text = string.Empty;
         }
     }
 }
