@@ -12,6 +12,7 @@
         <Style x:Key="ImageStyle1" TargetType="{x:Type Image}"/>
     </Window.Resources>
     <Grid>
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="900*"/>
             <ColumnDefinition Width="260"/>
@@ -40,5 +41,6 @@
 
         <Button x:Name="btnInvalidData" Content="无效图片" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,89,10" VerticalAlignment="Bottom" Height="24" Width="67" Click="btnInvalidData_Click" />
         <Button x:Name="btnLater" Content="稍后处理" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,89,39" VerticalAlignment="Bottom" Height="24" Width="67" Click="btnLater_Click" />
+
     </Grid>
 </Window>

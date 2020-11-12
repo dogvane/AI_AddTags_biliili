@@ -42,7 +42,7 @@ namespace ImageAddTags
         {
             // 加载数据
             using var db = DBSet.GetCon(DBSet.SqliteDBName.Bilibili);
-            tags = db.Select<ImageTag>(o => o.TagsName != null && o.TagsName != "无法识别");
+            tags = db.Select<ImageTag>(o => o.Status == "completed");
             labOutput.Content = $"当前有效tag数量：{tags.Count}";
         }
 

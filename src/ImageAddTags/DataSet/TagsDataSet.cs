@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using BilibiliSpider.Entity.Database;
 using BilibiliSpider.Spider.DataProcess;
@@ -10,7 +11,7 @@ namespace ImageAddTags.DataSet
 {
     class TagsDataSet
     {
-        public static void WriteSourceData(List<ImageTag> tags, string fileName, int width = 64, int height = 128)
+        public unsafe static void WriteSourceData(List<ImageTag> tags, string fileName, int width = (64 - 8), int height = 128)
         {
             // 简单一点，文件的格式是
             // 图片数量: int
@@ -31,32 +32,41 @@ namespace ImageAddTags.DataSet
             stream.Write(BitConverter.GetBytes(tags.Count));
             stream.Write(BitConverter.GetBytes(width));
             stream.Write(BitConverter.GetBytes(height));
+            stream.Write(BitConverter.GetBytes((int)3)); // 通道数量
 
-            var cc = CascadeClassifierManager.Load("haarcascade_frontalface_alt2.xml");
+            // 图片导出为3通道的mat byte数组
 
+            var i = 0;
             foreach (var item in tags)
             {
                 var image = Cv2.ImRead(item.GetTrueImageFile());
-
-                var ract = cc.DetectMultiScale(image);
-
-                if (ract.Length > 0)
+                foreach (var part in item.Parts)
                 {
-                    foreach (var r in ract)
+                    if (string.IsNullOrEmpty(part.TagNames) || 
+                        part.TagNames.Contains("无效"))
                     {
-                        // 根据脸部区域，裁切出带人物的尺寸大小
-                        var middle = new {x = r.Top + r.Height / 2, y = r.Left + r.Width / 2};
+                        continue;
+                    }
 
+                    var cutImage = image.Clone(part.Body);
+                    // 图片缩放
+                    var okSize = cutImage.Resize(new Size(width, height));
 
-                        Cv2.Rectangle(image, r, Scalar.Red);
-                        // 顺便标注一下尺寸
-                        var ioa = InputOutputArray.Create(image);
-                        Cv2.PutText(ioa, $"w:{r.Width} h:{r.Height}", new Point(r.Left, r.Bottom + 2),
-                            HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
+                    if (okSize.GetArray<Vec3b>(out var arrVec3B))
+                    {
+                        var span = MemoryMarshal.CreateSpan<Vec3b>(ref arrVec3B[0], width * height);
+                        var x = MemoryMarshal.AsBytes<Vec3b>(span);
+
+                        // var s2 = new Mat(height, width, MatType.CV_8UC3, x.ToArray());
+                        // s2.SaveImage($"r:/t/{i++}.png"); 输出图片demo
+
+                        stream.Write(x);
                     }
                 }
             }
 
+            stream.Flush();
+            stream.Close();
         }
 
         /// <summary>

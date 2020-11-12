@@ -14,6 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using BilibiliSpider.Common;
 using ImageAddTags.Common;
 using ImageAddTags.DataSet;
 using OpenCvSharp.Extensions;
@@ -148,12 +149,12 @@ namespace ImageAddTags
                 // 顺便标注一下尺寸
                 Cv2.PutText(ioa, $"top:{face.Top} left:{face.Left} w:{face.Width} h:{face.Height}",
                     new Point(face.Left, face.Bottom + 2),
-                    HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
+                    HersheyFonts.HersheySimplex, 1, Scalar.Blue);
 
                 ioa = InputOutputArray.Create(image);
                 Cv2.PutText(ioa, $"top:{body.Top} left:{body.Left} w:{body.Width} h:{body.Height}",
                     new Point(body.Left, body.Top - 10),
-                    HersheyFonts.HersheyDuplex, 1, Scalar.Blue);
+                    HersheyFonts.HersheySimplex, 1, Scalar.Blue);
             }
 
             imgShow.Source = image.MatToBitmapImage();
@@ -349,7 +350,11 @@ namespace ImageAddTags
 
         private void btnOpenOutput_Click(object sender, RoutedEventArgs e)
         {
-            new Output().ShowDialog();
+            using var db = DBSet.GetCon(DBSet.SqliteDBName.Bilibili);
+            var tags = db.Select<ImageTag>(o => o.Status == "completed");
+            TagsDataSet.WriteSourceData(tags, Path.Combine(Utils.DefaultDataFolder, "TrainData/bilibili.tags"));
+            MessageBox.Show("输出完成！");
+            // new Output().ShowDialog();
         }
 
         private void btnLater_Click(object sender, RoutedEventArgs e)
