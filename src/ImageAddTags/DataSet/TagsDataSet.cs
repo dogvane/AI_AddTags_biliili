@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using BilibiliSpider.Entity.Database;
 using BilibiliSpider.Spider.DataProcess;
 using OpenCvSharp;
+using ServiceStack;
 
 namespace ImageAddTags.DataSet
 {
@@ -34,9 +36,9 @@ namespace ImageAddTags.DataSet
             stream.Write(BitConverter.GetBytes(height));
             stream.Write(BitConverter.GetBytes((int)3)); // 通道数量
 
-            // 图片导出为3通道的mat byte数组
+            List<TagPart> saveParts = new List<TagPart>();  // 参与保存的图片信息
+            HashSet<string> mapNames = new HashSet<string>();
 
-            var i = 0;
             foreach (var item in tags)
             {
                 var image = Cv2.ImRead(item.GetTrueImageFile());
@@ -61,9 +63,40 @@ namespace ImageAddTags.DataSet
                         // s2.SaveImage($"r:/t/{i++}.png"); 输出图片demo
 
                         stream.Write(x);
+                        saveParts.Add(part);
+
+                        var names = part.TagNames.Split(',');
+                        foreach (var n in names)
+                            mapNames.Add(n);
                     }
                 }
             }
+
+            // 图片标签数量：int
+            // 图片标签数组：图片数量*图片标签数量(多标签的处理,1表示带有对应的tag)
+            // 图片标签名称：utf8字符串剩下的直接，出字符串后，用逗号分隔
+
+            stream.Write(BitConverter.GetBytes(mapNames.Count));
+            var saveNames = mapNames.OrderBy(o => o).ToList();
+
+            foreach (var part in saveParts)
+            {
+                var buffer = new byte[saveNames.Count];
+
+                foreach (var n in part.TagNames.Split(','))
+                {
+                    var index = saveNames.IndexOf(n);
+                    buffer[index] = 1;
+                }
+
+                stream.Write(buffer);
+            }
+
+            var tagBuffer = Encoding.UTF8.GetBytes(saveNames.ToCsv());
+            stream.Write(tagBuffer);
+            
+            stream.Seek(0, SeekOrigin.Begin);
+            stream.Write(BitConverter.GetBytes(saveParts.Count));
 
             stream.Flush();
             stream.Close();
