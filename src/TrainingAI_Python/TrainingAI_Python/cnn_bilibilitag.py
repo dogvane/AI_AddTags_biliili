@@ -18,6 +18,7 @@ class BilibiliLabData:
         self.labelNames = []
         self.images = []
         self.lables = []
+        self.lables2 = []
 
 def loadConfigData(fileName = ''):
     if fileName == '':
@@ -53,6 +54,17 @@ def loadConfigData(fileName = ''):
             train_lables = train_lables.reshape(ret.num, 1)
             ret.lables = train_lables
         
+        fileName4 = 'V:/Data/TrainData/lable2.mat'
+
+        with open(fileName4, 'rb') as f4:
+            data = f4.read()
+            train_lables = np.frombuffer(data, np.uint8)
+            train_lables = train_lables.reshape(ret.num, len(ret.labelNames))
+            # print(train_lables[1])
+            # print(train_lables[2])
+            # print(train_lables[3])
+            ret.lables2 = train_lables
+
         return ret
 
 config = loadConfigData()
@@ -83,8 +95,19 @@ model.add(layers.Dense(len(config.labelNames)))
 
 model.summary()
 
-model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-              metrics=['accuracy'])
+# model.compile(optimizer='adam',
+#               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+#               metrics=['accuracy'])
+# history = model.fit(config.images, config.lables, epochs=40, validation_data=(config.images, config.lables))
 
-history = model.fit(config.images, config.lables, epochs=100, validation_data=(config.images, config.lables))
+# 下列的是多标签的计算
+
+# model.compile(optimizer='sgd', loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True))
+
+model.compile(optimizer='sgd', loss=tf.keras.losses.CategoricalHinge())
+
+# model.compile(optimizer='sgd', loss=tf.keras.losses.BinaryCrossentropy())
+
+# model.compile(optimizer='sgd', loss=tf.keras.losses.SquaredHinge())
+
+history = model.fit(config.images, config.lables2, epochs=240, validation_data=(config.images, config.lables2))

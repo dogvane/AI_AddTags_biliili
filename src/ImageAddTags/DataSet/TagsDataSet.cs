@@ -79,25 +79,31 @@ namespace ImageAddTags.DataSet
             // 图片标签名称：utf8字符串剩下的直接，出字符串后，用逗号分隔
             var labFile = Path.Combine(path, "lable.mat");
             using var labStream = File.OpenWrite(labFile);
-            
+
+            using var labStream2 = File.OpenWrite(Path.Combine(path, "lable2.mat"));    // 多标签的数据输出
+
             var saveNames = mapNames.OrderBy(o => o).ToList();
 
             foreach (var part in saveParts)
             {
-                //var buffer = new byte[saveNames.Count];
+                {
+                    var buffer = new byte[saveNames.Count];
 
-                //foreach (var n in part.TagNames.Split(','))
-                //{
-                //    var index = saveNames.IndexOf(n);
-                //    buffer[index] = 1;
-                //}
+                    foreach (var n in part.TagNames.Split(','))
+                    {
+                        var index = saveNames.IndexOf(n);
+                        buffer[index] = 1;
+                    }
 
-                //labStream.Write(buffer);
+                    labStream2.Write(buffer);
+                }
 
-                var index = saveNames.IndexOf(part.TagNames.Split(',')[0]);
-                var buffer = new byte[1];
-                buffer[0] = (byte)index;
-                labStream.Write(buffer);
+                {
+                    var index = saveNames.IndexOf(part.TagNames.Split(',')[0]);
+                    var buffer = new byte[1];
+                    buffer[0] = (byte)index;
+                    labStream.Write(buffer);
+                }
             }
 
             var lines = new List<string>()
