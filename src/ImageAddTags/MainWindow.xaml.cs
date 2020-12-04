@@ -352,7 +352,9 @@ namespace ImageAddTags
         {
             using var db = DBSet.GetCon(DBSet.SqliteDBName.Bilibili);
             var tags = db.Select<ImageTag>(o => o.Status == "completed");
-            TagsDataSet.WriteSourceData(tags, Path.Combine(Utils.DefaultDataFolder, "TrainData/bilibili.tags"));
+            // TagsDataSet.WriteSourceData(tags, Path.Combine(Utils.DefaultDataFolder, "TrainData/bilibili.tags"));
+
+            TagsDataSet.WriteSourceData2(tags, Path.Combine(Utils.DefaultDataFolder, "TrainData/"));
             MessageBox.Show("输出完成！");
             // new Output().ShowDialog();
         }

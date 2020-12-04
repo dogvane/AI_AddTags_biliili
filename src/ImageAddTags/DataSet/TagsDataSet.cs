@@ -13,6 +13,105 @@ namespace ImageAddTags.DataSet
 {
     class TagsDataSet
     {
+        /// <summary>
+        /// 这个写数据的，不是将所有数据写到一个文件里，而是写入多个文件里
+        /// 
+        /// </summary>
+        /// <param name="tags"></param>
+        /// <param name="path"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        public unsafe static void WriteSourceData2(List<ImageTag> tags, string path, int width = (64 - 8),
+            int height = 128)
+        {
+            var imgFile = Path.Combine(path, "image.mat");
+
+            var outFile = new FileInfo(imgFile);
+            if (!outFile.Directory.Exists)
+                outFile.Directory.Create();
+
+            using var stream = outFile.OpenWrite();
+
+            List<TagPart> saveParts = new List<TagPart>();  // 参与保存的图片信息
+            HashSet<string> mapNames = new HashSet<string>();
+            int index2 = 0;
+
+            foreach (var item in tags)
+            {
+                var image = Cv2.ImRead(item.GetTrueImageFile());
+                foreach (var part in item.Parts)
+                {
+                    if (string.IsNullOrEmpty(part.TagNames) ||
+                        part.TagNames.Contains("无效"))
+                    {
+                        continue;
+                    }
+
+                    // 将人物身体复制出来
+                    var cutImage = image.Clone(part.Body);
+                    // 图片缩放
+                    var okSize = cutImage.Resize(new Size(width, height));
+                    
+                    if (okSize.GetArray<Vec3b>(out var arrVec3B))
+                    {
+                        // 字节流是BGR模式的
+
+                        var span = MemoryMarshal.CreateSpan<Vec3b>(ref arrVec3B[0], width * height);
+                        var x = MemoryMarshal.AsBytes<Vec3b>(span);
+
+                        okSize.SaveImage($"r:/{index2++}.png");
+
+                        stream.Write(x);
+                        saveParts.Add(part);
+
+                        var names = part.TagNames.Split(',');
+                        foreach (var n in names)
+                            mapNames.Add(n);
+                    }
+                }
+            }
+            stream.Flush();
+            stream.Close();
+
+
+            // 图片标签数量：int
+            // 图片标签数组：图片数量*图片标签数量(多标签的处理,1表示带有对应的tag)
+            // 图片标签名称：utf8字符串剩下的直接，出字符串后，用逗号分隔
+            var labFile = Path.Combine(path, "lable.mat");
+            using var labStream = File.OpenWrite(labFile);
+            
+            var saveNames = mapNames.OrderBy(o => o).ToList();
+
+            foreach (var part in saveParts)
+            {
+                //var buffer = new byte[saveNames.Count];
+
+                //foreach (var n in part.TagNames.Split(','))
+                //{
+                //    var index = saveNames.IndexOf(n);
+                //    buffer[index] = 1;
+                //}
+
+                //labStream.Write(buffer);
+
+                var index = saveNames.IndexOf(part.TagNames.Split(',')[0]);
+                var buffer = new byte[1];
+                buffer[0] = (byte)index;
+                labStream.Write(buffer);
+            }
+
+            var lines = new List<string>()
+            {
+                saveParts.Count.ToString(),
+                width.ToString(),
+                height.ToString(),
+            };
+
+            lines.AddRange(saveNames);
+
+            File.WriteAllLines(Path.Combine(path, "config.txt"), lines, new UTF8Encoding(false));
+        }
+
         public unsafe static void WriteSourceData(List<ImageTag> tags, string fileName, int width = (64 - 8), int height = 128)
         {
             // 简单一点，文件的格式是
