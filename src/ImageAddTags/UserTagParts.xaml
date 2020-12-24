@@ -23,7 +23,7 @@
                    Margin="0, 0,0,0"
                    Width="220"
             >
-                <Grid Height="78" Width="200" HorizontalAlignment="Left">
+                <Grid Height="auto" Width="200" HorizontalAlignment="Left">
                     <local:TagPickup x:Name="tagPickup">
 
                     </local:TagPickup>

@@ -15,14 +15,14 @@
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="900*"/>
-            <ColumnDefinition Width="260"/>
+            <ColumnDefinition Width="280*"/>
         </Grid.ColumnDefinitions>
         <Image Grid.Column="0"  x:Name="imgShow" HorizontalAlignment="Left" Height="auto"  Width="auto" Margin="0,0,0,0"/>
 
         <WrapPanel x:Name="panelCurrentImgTags" VerticalAlignment="Top"   Grid.Column="1" Height="40" Margin="0,40,0,0"  >
         </WrapPanel>
 
-        <WrapPanel x:Name="panelParts" VerticalAlignment="Top" HorizontalAlignment="Right"  Grid.Column="1" Height="auto" Margin="0,90,0,0"  >
+        <WrapPanel x:Name="panelParts" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.Column="1" Height="auto" MinHeight="530" Margin="0,90,0,0"  >
         </WrapPanel>
 
 

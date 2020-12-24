@@ -6,9 +6,9 @@
              xmlns:local="clr-namespace:ImageAddTags"
              mc:Ignorable="d" 
              >
-    <Grid>
+    
         <WrapPanel x:Name="panelTags" >
 
         </WrapPanel>
-    </Grid>
+    
 </UserControl>
