@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenCvSharp4.Windows" Version="4.5.0.20201013" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\3rdparty\opencvsharp\src\OpenCvSharp.Blob\OpenCvSharp.Blob.csproj" />
+    <ProjectReference Include="..\..\3rdparty\opencvsharp\src\OpenCvSharp.Extensions\OpenCvSharp.Extensions.csproj" />
+    <ProjectReference Include="..\..\3rdparty\opencvsharp\src\OpenCvSharp\OpenCvSharp.csproj" />
+  </ItemGroup>
+
+</Project>

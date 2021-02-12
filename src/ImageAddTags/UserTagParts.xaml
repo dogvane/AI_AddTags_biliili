@@ -34,5 +34,8 @@
                 HorizontalAlignment="Left" VerticalAlignment="Bottom"
                 Margin="10,0,0,10" Padding="4,3" 
                 Click="BtnNotUse_Click"></Button>
+        <Label Name="lab_AITest"  Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                Margin="53,0,0,10" Padding="4,3"   Content=""/>
+
     </Grid>
 </UserControl>

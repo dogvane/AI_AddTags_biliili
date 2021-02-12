@@ -12,6 +12,8 @@ using BilibiliSpider.DB;
 using DotnetSpider.DataFlow;
 using DotnetSpider.DataFlow.Parser;
 using ServiceStack.OrmLite;
+using OpenCvSharp;
+using AITag;
 
 namespace BilibiliSpider.Spider.DataProcess
 {
@@ -111,14 +113,53 @@ namespace BilibiliSpider.Spider.DataProcess
             if (dbItem == null)
             {
                 image.Status = "downfile_finish";
+                OpenCVAnalysis(image);
                 db.Insert(image);
             }
             else
             {
                 dbItem.Status = "downfile_finish";
+                OpenCVAnalysis(image);
                 db.Update(dbItem);
             }
 
+            // 这里做一下opencv的识别，如果识别出来，再改变一下状态
+        }
+
+        /// <summary>
+        /// 对图片做opencv的人脸分析
+        /// </summary>
+        /// <param name="imgTag"></param>
+        public static void OpenCVAnalysis(ImageTag imgTag)
+        {
+            var imageFile = imgTag.GetTrueImageFile();
+            var image = Cv2.ImRead(imageFile);
+
+            var tps = new List<TagPart>();
+
+            foreach (var face in FaceDetect.OpenCvDetectMultiScale(image))
+            {
+                var body = AITag.Common.Utils.GetBodyRect(face, (double)(64 - 8) / 128, image.Width, image.Height);
+
+                if (body != Rect.Empty)
+                {
+                    tps.Add(new TagPart
+                    {
+                        Face = face,
+                        Body = body
+                    });
+                }
+            }
+
+            if (tps.Count == 0)
+            {
+                imgTag.Status = "opencv_fail";
+            }
+            else
+            {
+                imgTag.OpenCvParts = tps;
+                imgTag.Status = "opencv_finish";
+            }
         }
     }
 

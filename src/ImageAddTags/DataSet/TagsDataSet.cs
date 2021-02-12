@@ -8,11 +8,32 @@ using BilibiliSpider.Entity.Database;
 using BilibiliSpider.Spider.DataProcess;
 using OpenCvSharp;
 using ServiceStack;
+using Newtonsoft.Json;
+using NumSharp;
+using Tensorflow.Keras.Engine;
+using BilibiliSpider.Common;
+using AITag;
+using Tensorflow;
+using Tensorflow.Keras;
+using Tensorflow.Keras.Layers;
+using static Tensorflow.Binding;
+using static Tensorflow.KerasApi;
+using Utils = BilibiliSpider.Common.Utils;
 
 namespace ImageAddTags.DataSet
 {
     class TagsDataSet
     {
+        public class Result
+        {
+            /// <summary>
+            /// 图片数量
+            /// </summary>
+            public int PicNum { get; set; }
+
+            public Dictionary<string, int> LabelCount { get; set; } = new Dictionary<string, int>();
+        }
+
         /// <summary>
         /// 这个写数据的，不是将所有数据写到一个文件里，而是写入多个文件里
         /// 
@@ -21,10 +42,12 @@ namespace ImageAddTags.DataSet
         /// <param name="path"></param>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public unsafe static void WriteSourceData2(List<ImageTag> tags, string path, int width = (64 - 8),
+        public unsafe static Result WriteSourceData2(List<ImageTag> tags, string path, int width = (64 - 8),
             int height = 128)
         {
             var imgFile = Path.Combine(path, "image.mat");
+            
+            Result result = new Result();
 
             var outFile = new FileInfo(imgFile);
             if (!outFile.Directory.Exists)
@@ -36,10 +59,12 @@ namespace ImageAddTags.DataSet
             HashSet<string> mapNames = new HashSet<string>();
             int index2 = 0;
 
+            List<object> sourceList = new List<object>();
+
             foreach (var item in tags)
             {
                 var image = Cv2.ImRead(item.GetTrueImageFile());
-                foreach (var part in item.Parts)
+                foreach (var part in item.OpenCvParts)
                 {
                     if (string.IsNullOrEmpty(part.TagNames) ||
                         part.TagNames.Contains("无效"))
@@ -67,6 +92,18 @@ namespace ImageAddTags.DataSet
                         var names = part.TagNames.Split(',');
                         foreach (var n in names)
                             mapNames.Add(n);
+
+                        result.PicNum++;
+                        var key = names[0];
+
+                        if (result.LabelCount.ContainsKey(key))
+                        {
+                            result.LabelCount[key]++;
+                        }
+                        else
+                        {
+                            result.LabelCount[key] = 1;
+                        }
                     }
                 }
             }
@@ -116,6 +153,8 @@ namespace ImageAddTags.DataSet
             lines.AddRange(saveNames);
 
             File.WriteAllLines(Path.Combine(path, "config.txt"), lines, new UTF8Encoding(false));
+
+            return result;
         }
 
         public unsafe static void WriteSourceData(List<ImageTag> tags, string fileName, int width = (64 - 8), int height = 128)
@@ -147,7 +186,7 @@ namespace ImageAddTags.DataSet
             foreach (var item in tags)
             {
                 var image = Cv2.ImRead(item.GetTrueImageFile());
-                foreach (var part in item.Parts)
+                foreach (var part in item.OpenCvParts)
                 {
                     if (string.IsNullOrEmpty(part.TagNames) || 
                         part.TagNames.Contains("无效"))
@@ -208,85 +247,113 @@ namespace ImageAddTags.DataSet
         }
 
         /// <summary>
-        /// 
+        /// 读取数据
         /// </summary>
-        /// <param name="faceRect"></param>
-        /// <param name="rate">宽高比 w/h </param>
-        /// <param name="picWidth">图片的宽度</param>
-        /// <param name="picHeight">图片高度</param>
-        /// <returns></returns>
-        public static Rect GetRect(Rect faceRect, double rate, int picWidth, int picHeight)
+        public static BilibiliDataSet ReadDataSets(string basePath)
         {
-            // 中心点
-            var middle = new {x = faceRect.Left + faceRect.Width / 2, y = faceRect.Top + faceRect.Height / 2};
-            
-            // 脸的大小（中点的半径)
-            var r = Math.Min(faceRect.Height, faceRect.Width) / 2;
+            var configFileName = Path.Combine(basePath, "config.txt");
 
-            var height = r * 17; // 八头身
-            var width = (int)(height * rate); // 截取长宽比是 1:2
+            var configLines = File.ReadAllLines(configFileName);
 
-            var left = middle.x - (int)width / 2;
-            var top = middle.y - r * 2;
+            var ret = new BilibiliDataSet();
+            ret.Num = int.Parse(configLines[0]);
+            ret.Width = int.Parse(configLines[1]);
+            ret.Height = int.Parse(configLines[2]);
 
-            var ret = new Rect(left, top, width, height);
+            ret.LabNames = configLines[3..];
 
-            // 判断body是否能满足截取需求
+            var imageFileName = Path.Combine(basePath,  "image.mat");
 
-            if (ret.Top > 0 &&
-                ret.Left > 0 &&
-                ret.Top + height < picHeight &&
-                ret.Left + width < picWidth)
-            {
-                // 矩形刚好再图片范围内
-                return ret;
-            }
+            var bytes = File.ReadAllBytes(imageFileName);
 
-            // 如果不在范围内，则尝试缩小一下范围，看看能不能放下
-            var wr = 0.0;
-            var hr = 0.0;
+            var images = np.array(bytes) / 255.0f;
+            ret.Images = images.reshape(ret.Num, ret.Height, ret.Width, 3);
 
-            if (ret.Top < 0)
-            {
-                hr = (double)-(ret.Top*2) / height;
-            }
+            var singleLabelFileName = Path.Combine(basePath, "lable.mat");
 
-            if (ret.Bottom > picHeight)
-            {
-                hr = (double) ((ret.Bottom - picHeight)*2) / height;
-            }
+            var labBytes = File.ReadAllBytes(singleLabelFileName);
+            ret.Lables = np.array(labBytes).reshape(ret.Num, 1);
 
-            if (ret.Left < 0)
-            {
-                wr = (double) -(ret.Left*2) / height;
-            }
-
-            if (ret.Right > picWidth)
-            {
-                wr = (double)((ret.Right - picWidth) *2) / width;
-            }
-
-            var maxR = Math.Max(hr, wr);
-
-            if (maxR < 0.3)
-            {
-                // 变动不超过2层，可以进行截取操作，否则先无视
-                var nHeight = (int)(height * (1 - maxR));
-                var nWidth = (int)(height * rate);
-                var ret2 = new Rect(ret.X + ((width - nWidth) / 2), ret.Y + Math.Min(((height - nHeight) / 2), r), nWidth, nHeight);
-                Console.WriteLine($"{ret} -> {ret2}");
-
-                if (ret2.Top > 0 &&
-                    ret2.Left > 0 &&
-                    ret2.Top + height < picHeight &&
-                    ret2.Left + width < picWidth)
-                {
-                    // 矩形刚好再图片范围内
-                    return ret2;
-                }
-            }
-
-            return Rect.Empty;
+            return ret;
         }
+
+
+        static Functional s_model;
+        static BilibiliDataSet s_dataSet;
+
+        public static Functional GetModelInstance()
+        {
+            if (s_model == null)
+            {
+                var folderName = Path.Combine(Utils.DefaultDataFolder, "TrainData/");
+
+                s_dataSet = ReadDataSets(folderName);
+
+                s_model = TFModels.GetBilibiliModelV1(s_dataSet.Width, s_dataSet.Height, s_dataSet.LabNames.Length);
+                
+                var weightsFileName = Path.Combine(Utils.DefaultDataFolder, "TrainData/bilibili.h5");
+                if(File.Exists(weightsFileName))
+                    s_model.load_weights(weightsFileName);
+            }
+
+            return s_model;
+        }
+
+        public static string ModelTest(Mat mat)
+        {
+            var model = GetModelInstance();
+
+            var width = s_dataSet.Width;
+            var height = s_dataSet.Height;
+
+            if(mat.Width != width  && mat.Height != height)
+            {
+                mat = mat.Resize(new Size(width, height));
+            }
+
+            if (mat.GetArray<Vec3b>(out var arrVec3B))
+            {
+                // 字节流是BGR模式的
+
+                var span = MemoryMarshal.CreateSpan<Vec3b>(ref arrVec3B[0], width * height);
+                var x = MemoryMarshal.AsBytes<Vec3b>(span);
+
+                var ts = np.array(x.ToArray()) / 255.0f; ;
+                ts = ts.reshape(1, height, width, 3);
+
+                var result = model.predict(ts, 1);
+                var index = tf.argmax(result[0]).numpy()[0];
+                return s_dataSet.LabNames[index];
+            }
+
+            return string.Empty;
+        }
+
+        public static void ChangeModel(Functional model, BilibiliDataSet dataSet)
+        {
+            s_model = model;
+            s_dataSet = dataSet;
+        }
+    }
+
+
+    public class BilibiliDataSet
+    {
+        public int Num { get; set; }
+
+        public int Width { get; set; }
+
+        public int Height { get; set; }
+
+        public string[] LabNames { get; set; }
+
+        [JsonIgnore]
+        public NDArray Images;
+
+        /// <summary>
+        /// 单标签数据
+        /// </summary>
+        [JsonIgnore]
+        public NDArray Lables;
     }
 }

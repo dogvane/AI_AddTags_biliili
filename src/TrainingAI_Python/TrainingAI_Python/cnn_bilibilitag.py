@@ -95,19 +95,26 @@ model.add(layers.Dense(len(config.labelNames)))
 
 model.summary()
 
-# model.compile(optimizer='adam',
-#               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-#               metrics=['accuracy'])
-# history = model.fit(config.images, config.lables, epochs=40, validation_data=(config.images, config.lables))
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+history = model.fit(config.images, config.lables, epochs=50, validation_data=(config.images, config.lables))
 
 # 下列的是多标签的计算
 
 # model.compile(optimizer='sgd', loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True))
 
-model.compile(optimizer='sgd', loss=tf.keras.losses.CategoricalHinge())
+# model.compile(optimizer='sgd', loss=tf.keras.losses.CategoricalHinge())
 
 # model.compile(optimizer='sgd', loss=tf.keras.losses.BinaryCrossentropy())
 
 # model.compile(optimizer='sgd', loss=tf.keras.losses.SquaredHinge())
 
-history = model.fit(config.images, config.lables2, epochs=240, validation_data=(config.images, config.lables2))
+# history = model.fit(config.images, config.lables2, epochs=100, validation_data=(config.images, config.lables2))
+
+pre = model.predict(config.images)
+print(np.argmax(pre,  axis = 1))
+
+# print(np.argmax(pre[0]))
+# print(np.argmax(pre[1]))
+# print(np.argmax(pre[2]))

@@ -71,6 +71,8 @@ namespace BilibiliSpider.Spider
         {
         }
 
+        int notfindCount = 0;
+
         public override void OnHanlder(DataFlowContext context, BilibiliListRet parseObj)
         {
             // Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(parseObj));
@@ -143,22 +145,32 @@ namespace BilibiliSpider.Spider
                 context.AddFollowRequests(request);
             }
 
-            if (newCount > -1)
+            if(newCount > -1)
+            {
+                notfindCount++;
+            }
+            else
+            {
+                notfindCount = 0;
+            }
+
+
+            if (notfindCount < 20)
             {
                 Console.WriteLine("getNextPage");
                 var page = (int)context.Request.Properties["pageNo"];
                 var tid = (int) context.Request.Properties["rid"];
 
-                if (page < 2)
+                // if (page < 2)
                 {
                     var request = CreateListRequest(tid, page + 1);
                     context.AddFollowRequests(request);
                 }
             }
-            else
-            {
-                Console.WriteLine("finish");
-            }
+            //else
+            //{
+            //    Console.WriteLine("finish");
+            //}
         }
 
         /// <summary>

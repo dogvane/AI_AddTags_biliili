@@ -26,7 +26,7 @@ namespace BilibiliSpider.Spider
         {
             var builder = Builder.CreateDefaultBuilder<AVListSpider>(options =>
             {
-                options.Speed = 2;
+                options.Speed = 0.5;
             });
             builder.UseDownloader<HttpClientDownloader>();
             builder.UseSerilog();

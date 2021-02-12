@@ -6,6 +6,7 @@ using BilibiliSpider.DB;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
+using BilibiliSpider.Process;
 
 namespace BilibiliSpider
 {
@@ -20,11 +21,14 @@ namespace BilibiliSpider
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
                 .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
-                .WriteTo.Console().WriteTo.RollingFile("logs/spiders.log")
+                .WriteTo.Console().WriteTo.File("logs/spiders.log")
                 .CreateLogger();
 
             Console.WriteLine("Hello World!");
             DBSet.Init();
+
+            //OpenCvFaceProcess.Do();
+            //return;
 
             var task = AVListSpider.RunAsync();
             task.Wait();

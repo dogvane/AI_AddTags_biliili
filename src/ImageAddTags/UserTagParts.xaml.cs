@@ -14,6 +14,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using BilibiliSpider.Entity.Database;
+using ImageAddTags.Common;
+using ImageAddTags.DataSet;
+using NumSharp;
+using OpenCvSharp;
 
 namespace ImageAddTags
 {
@@ -156,7 +160,8 @@ namespace ImageAddTags
         /// 初始化控件要显示的内容
         /// </summary>
         /// <param name="item"></param>
-        public void InitData(TagPart item)
+        /// <param name="mat">用于展示的图片</param>
+        public void InitData(TagPart item, Mat mat)
         {
             m_item = item;
             tagPickup.OnClickTag += TagPickup_OnClickTag;
@@ -167,9 +172,12 @@ namespace ImageAddTags
             }
 
             panelTags.TagNames = item.TagNames;
-        }
+            imgShow.Source = mat.MatToBitmapImage();
 
-        private void TagPickup_OnClickTag(string tagName)
+            var text = TagsDataSet.ModelTest(mat);
+            lab_AITest.Content = text;
+        }
+            private void TagPickup_OnClickTag(string tagName)
         {
             Console.WriteLine(tagName);
             // 这里是操作增加的

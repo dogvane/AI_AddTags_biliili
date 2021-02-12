@@ -9,6 +9,7 @@ namespace BilibiliSpider.Entity.Database
 {
     /// <summary>
     /// 图片的标签信息
+    /// 主要是自己打的标签数据
     /// </summary>
     [Serializable]
     public class ImageTag
@@ -63,19 +64,19 @@ namespace BilibiliSpider.Entity.Database
         /// 标签区域
         /// </summary>
         [Ignore]
-        public List<TagPart> Parts { get; set; } = new List<TagPart>();
+        public List<TagPart> OpenCvParts { get; set; } = new List<TagPart>();
 
-        [Alias("Parts")]
+        [Alias("OpenCvParts")]
         public string PartsStr{
             get
             {
-                return JsonConvert.SerializeObject(Parts);
+                return JsonConvert.SerializeObject(OpenCvParts);
             }
             set
             {
                 if (!string.IsNullOrEmpty(value))
                 {
-                    Parts = JsonConvert.DeserializeObject<List<TagPart>>(value);
+                    OpenCvParts = JsonConvert.DeserializeObject<List<TagPart>>(value);
                 }
             }
         }

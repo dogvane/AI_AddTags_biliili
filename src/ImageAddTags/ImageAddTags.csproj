@@ -11,6 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SciSharp.TensorFlow.Redist-Windows-GPU" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AITag\AITag.csproj" />
     <ProjectReference Include="..\BilibiliSpider\BilibiliSpider.csproj" />
   </ItemGroup>
 

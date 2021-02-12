@@ -22,6 +22,7 @@ using ServiceStack;
 using Point = OpenCvSharp.Point;
 using Window = System.Windows.Window;
 using Rect = OpenCvSharp.Rect;
+using AITag;
 
 namespace ImageAddTags
 {
@@ -93,20 +94,18 @@ namespace ImageAddTags
 
             var image = Cv2.ImRead(currentShowTag.GetTrueImageFile());
 
-            var cc = CascadeClassifierManager.Load("haarcascade_frontalface_alt2.xml");
-
-            var tps = currentShowTag.Parts;
+            var tps = currentShowTag.OpenCvParts;
 
             if(tps == null || tps.Count == 0)
             {
                 // 网上有看到有人先转灰度再识别，实际效果也没好多少 var gray_img = image.CvtColor(ColorConversionCodes.RGB2GRAY);
-                var ract = cc.DetectMultiScale(image);
+                var ract = FaceDetect.OpenCvDetectMultiScale(image);
 
                 tps = new List<TagPart>();
 
                 foreach (var face in ract)
                 {
-                    var body = TagsDataSet.GetRect(face, (double) (64 - 8) / 128, image.Width, image.Height);
+                    var body = AITag.Common.Utils.GetBodyRect(face, (double) (64 - 8) / 128, image.Width, image.Height);
 
                     if (body != Rect.Empty)
                     {
@@ -126,7 +125,7 @@ namespace ImageAddTags
                 return;
             }
 
-            currentShowTag.Parts = tps;
+            currentShowTag.OpenCvParts = tps;
 
             panelParts.Children.Clear();
 
@@ -139,8 +138,9 @@ namespace ImageAddTags
 
                 var i2 = image.Clone(body);
                 var utp = new UserTagParts();
-                utp.InitData(item);
-                utp.imgShow.Source = i2.MatToBitmapImage();
+                
+                utp.InitData(item, i2);
+
                 panelParts.Children.Add(utp);
 
                 Cv2.Rectangle(image, body, Scalar.Red);
@@ -190,7 +190,7 @@ namespace ImageAddTags
             // 窗口初始化结束
             using var db = DBSet.GetCon(DBSet.SqliteDBName.Bilibili);
 
-            var list = db.Select<ImageTag>(o => o.Status == "downfile_finish").Take(100);
+            var list = db.Select<ImageTag>(o => o.Status == "opencv_finish").Take(100);
 
             foreach (var item in list)
             {
@@ -327,7 +327,7 @@ namespace ImageAddTags
             {
                 var allTags = new HashSet<string>();
 
-                foreach (var part in currentShowTag.Parts)
+                foreach (var part in currentShowTag.OpenCvParts)
                 {
                     if (part.TagNames == null)
                         continue;
@@ -381,6 +381,11 @@ namespace ImageAddTags
         {
             UpdateIamgeTagStatus(currentShowTag, "invalid_data");
             btnNextImage_Click(null, null);
+        }
+
+        private void btnOpenOutputAndTrain_Click(object sender, RoutedEventArgs e)
+        {
+            new TrainTags().ShowDialog();
         }
     }
 }

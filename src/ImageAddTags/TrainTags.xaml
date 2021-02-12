@@ -1,0 +1,19 @@
+﻿<Window x:Class="ImageAddTags.TrainTags"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ImageAddTags"
+        mc:Ignorable="d"
+        Title="训练AI" Height="320" Width="640" Loaded="Window_Loaded">
+    <Grid>
+        <ProgressBar x:Name="pb" HorizontalAlignment="Left" Height="50" Margin="29,10,0,0" VerticalAlignment="Top" Width="601" />
+        <Button Content="停止并退出..." HorizontalAlignment="Left" Margin="529,260,0,0" VerticalAlignment="Top"  Name="btnQuit" Click="btnQuit_Click" />
+        <Label Content="当前状态" Name="labStatus" HorizontalAlignment="Left" Margin="29,65,0,0" VerticalAlignment="Top"/>
+        <Label Content="损失率" Name="labLoss" HorizontalAlignment="Left" Margin="29,105,0,0" VerticalAlignment="Top"/>
+        <Label Content="准确率" Name="labAccuracy" HorizontalAlignment="Left" Margin="29,0,0,0" VerticalAlignment="Center"/>
+        <Label Content="当前状态" x:Name="lab_pic" HorizontalAlignment="Center" Margin="0,65,0,0" VerticalAlignment="Top"/>
+        <Label Content="当前状态" x:Name="lab_label" HorizontalAlignment="Center" Margin="0,105,0,0" VerticalAlignment="Top"/>
+
+    </Grid>
+</Window>

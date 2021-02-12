@@ -21,6 +21,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="cnn_bilibilitag.py" />
     <Compile Include="fashion.py">
       <SubType>Code</SubType>
     </Compile>

@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using OpenCvSharp;
 
-namespace ImageAddTags
+namespace AITag.Common
 {
     class CascadeClassifierManager
     {

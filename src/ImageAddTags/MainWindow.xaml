@@ -38,6 +38,7 @@
         <Label x:Name="label" Content="当前图片的标签" Grid.Column="1" HorizontalAlignment="Left" Margin="10,15,0,0" VerticalAlignment="Top"/>
         <Button x:Name="btnSave" Content="保存当前" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Height="24" Width="67" Click="btnSave_Click" />
         <Button x:Name="btnOpenOutput" Content="输出..." Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,10,84" VerticalAlignment="Bottom" Padding="12,0" Click="btnOpenOutput_Click"/>
+        <Button x:Name="btnOpenOutputAndTrain" Content="输出并训练到90" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,10,64" VerticalAlignment="Bottom" Padding="12,0" Click="btnOpenOutputAndTrain_Click"/>
 
         <Button x:Name="btnInvalidData" Content="无效图片" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,89,10" VerticalAlignment="Bottom" Height="24" Width="67" Click="btnInvalidData_Click" />
         <Button x:Name="btnLater" Content="稍后处理" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,89,39" VerticalAlignment="Bottom" Height="24" Width="67" Click="btnLater_Click" />
