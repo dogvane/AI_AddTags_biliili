@@ -322,8 +322,10 @@ namespace ImageAddTags.DataSet
                 ts = ts.reshape(1, height, width, 3);
 
                 var result = model.predict(ts, 1);
-                var index = tf.argmax(result[0]).numpy()[0];
-                return s_dataSet.LabNames[index];
+                var index = (int)tf.argmax(result[0]).numpy()[0];
+                var numpy = result[0].numpy();
+                var maxValue = (float) (numpy.max());
+                return $"{s_dataSet.LabNames[index]}({maxValue:f2}-{maxValue / 255.0:f2})" ;
             }
 
             return string.Empty;

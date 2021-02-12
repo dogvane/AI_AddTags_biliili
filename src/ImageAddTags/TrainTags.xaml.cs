@@ -41,7 +41,7 @@ namespace ImageAddTags
                 return;
             }
 
-            isRuning = true;
+            isRuning = false;
             isSaveWeights = false;
             labStatus.Content = "等待保存中...";
 
