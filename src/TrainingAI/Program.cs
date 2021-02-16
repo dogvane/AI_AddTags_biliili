@@ -49,6 +49,8 @@ namespace TrainingAI
 
             var inputs = layers.Conv2D(32, (3, 3), activation: keras.activations.Relu).Apply(inputss);
             inputs = layers.MaxPooling2D((2, 2)).Apply(inputs);
+            inputs = layers.Conv2D(64, (1, 1), activation: keras.activations.Relu).Apply(inputs);
+            inputs = layers.MaxPooling2D((1, 1)).Apply(inputs);
             inputs = layers.Conv2D(64, (3, 3), activation: keras.activations.Relu).Apply(inputs);
             inputs = layers.MaxPooling2D((2, 2)).Apply(inputs);
             inputs = layers.Conv2D(64, (3, 3), activation: keras.activations.Relu).Apply(inputs);
@@ -56,6 +58,8 @@ namespace TrainingAI
             inputs = layers.Conv2D(64, (3, 3), activation: keras.activations.Relu).Apply(inputs);
             inputs = layers.MaxPooling2D((1, 1)).Apply(inputs);
             inputs = layers.Conv2D(64, (2, 2), activation: keras.activations.Relu).Apply(inputs);
+            inputs = layers.MaxPooling2D((1, 1)).Apply(inputs);
+            inputs = layers.Conv2D(64, (1, 1), activation: keras.activations.Relu).Apply(inputs);
             inputs = layers.MaxPooling2D((1, 1)).Apply(inputs);
 
             inputs = layers.Flatten().Apply(inputs);
@@ -71,7 +75,7 @@ namespace TrainingAI
              optimizer: keras.optimizers.Adam(),
              metrics: new[] { "accuracy" });
 
-            var modelFile = "bilibili2.h5";
+            var modelFile = @"V:\Data\TrainData\bilibili.h5";
             if (File.Exists(modelFile))
             {
                 try
@@ -97,14 +101,23 @@ namespace TrainingAI
             var metrics = model.metrics.ToArray();
 
             Console.WriteLine(JsonConvert.SerializeObject(metrics));
-            model.fit(config.Images, config.Lables, epochs: 10);
 
-            metrics = model.metrics.ToArray();
-            var lost = (float)metrics[0].result();
-            var accuracy = (float)metrics[1].result();
-            Console.WriteLine($"lost:{lost} accuracy:{accuracy}");
+            while (true)
+            {
+                model.fit(config.Images, config.Lables, epochs: 5);
+                var metrices = model.metrics.ToArray();
+                var loss = (float)metrices[0].result();
+                var accuracy = (float)metrices[1].result();
 
-            model.save_weights(modelFile);
+                Console.WriteLine($"lost:{loss} accuracy:{accuracy}");
+
+                model.save_weights(modelFile);
+
+                if (accuracy > 0.95 && loss < 0.1)
+                {
+                    break;
+                }
+            }
 
             var result = model.predict(one);
             var max = tf.argmax(result[0], 1);
