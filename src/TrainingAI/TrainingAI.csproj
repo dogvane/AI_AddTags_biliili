@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -10,12 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SciSharp.TensorFlow.Redist-Windows-GPU" Version="2.3.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\3rdparty\TensorFlow.NET\src\TensorFlowNET.Core\Tensorflow.Binding.csproj" />
-    <ProjectReference Include="..\..\3rdparty\TensorFlow.NET\src\TensorFlowNET.Keras\Tensorflow.Keras.csproj" />
     <ProjectReference Include="..\BilibiliSpider\BilibiliSpider.csproj" />
   </ItemGroup>
 

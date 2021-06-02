@@ -49,6 +49,7 @@ namespace TrainingAI
 
             var inputs = layers.Conv2D(32, (3, 3), activation: keras.activations.Relu).Apply(inputss);
             inputs = layers.MaxPooling2D((2, 2)).Apply(inputs);
+
             inputs = layers.Conv2D(64, (1, 1), activation: keras.activations.Relu).Apply(inputs);
             inputs = layers.MaxPooling2D((1, 1)).Apply(inputs);
             inputs = layers.Conv2D(64, (3, 3), activation: keras.activations.Relu).Apply(inputs);
@@ -56,6 +57,7 @@ namespace TrainingAI
             inputs = layers.Conv2D(64, (3, 3), activation: keras.activations.Relu).Apply(inputs);
             inputs = layers.MaxPooling2D((2, 2)).Apply(inputs);
             inputs = layers.Conv2D(64, (3, 3), activation: keras.activations.Relu).Apply(inputs);
+
             inputs = layers.MaxPooling2D((1, 1)).Apply(inputs);
             inputs = layers.Conv2D(64, (2, 2), activation: keras.activations.Relu).Apply(inputs);
             inputs = layers.MaxPooling2D((1, 1)).Apply(inputs);
